@@ -1,175 +1,657 @@
 <template>
-<div>
-<nb></nb>
-<b-container class="big">
-    <br>
-    <div class="info">
-    <b-row class="justify-content-md-center" >
-        
-           <b-col class = "icon" col lg="3">
-               
-                <b-img left src='https://66.media.tumblr.com/19b4fd02190fe6d034f763442456191f/tumblr_owelzq4E7j1tf5kqco9_250.png' rounded="circle" width=150px></b-img>
-            </b-col>
-            <b-col id ='about'>
-               
-                <b-row id = "Name">
-                {{spidey.name}} </b-row> 
-                <b-row id = "username">@{{spidey.username}}</b-row>
-                <b-row id = 'details' cols=6>
-               Year {{spidey.year}} {{spidey.major}} student
-            </b-row><br><br>
-  
-                </b-col>
-            
-            </b-row>
-            
-            </div>
-    
-        <b-row>
-            <b-col>
-            <b-card no-body >
-                <b-tabs pills card>
-                    <b-tab title="Groups Created" active>
-                        <b-row align-h="left" >
-                            <Post v-for = "m in posts"
-                                class = "post-feed" 
-                                :key = m.id
-                                :module = m.mod_code
-                                :userId = m.userId
-                                :post_desc = m.post_desc
-                                :post_status= m.post_status
-                                :post_date = m.post_date
-                                :members = m.members
-                                >
-                                </Post>
-                                <StudyPost v-for = "s in studyposts" 
-                                :key = s.id
-                                :groupName = s.groupName
-                                :userId = s.userId
-                                :post_desc = s.post_desc
-                                :post_status= s.post_status
-                                :post_date = s.post_date
-                                :location = s.location
-                                :faculty = s.faculty
-                                :members = s.members
-                                >
-                                </StudyPost>  
-                        </b-row>
-                    </b-tab>
-                    <b-tab title = 'Groups Joined'><b-row align-h="left" >
-                            <Post v-for = "m in joined"
-                                class = "post-feed" 
-                                :key = m.id
-                                :module = m.mod_code
-                                :userId = m.userId
-                                :post_desc = m.post_desc
-                                :post_status= m.post_status
-                                :post_date = m.post_date
-                                :members = m.members
-                                >
-                                </Post></b-row></b-tab>
-                    </b-tabs>
-            </b-card></b-col>
-           
+  <div>
+    <nb></nb>
+    <div id="my-container" class="hi" align="center">
+      <div class="img" id='main'
+        style="background-image: linear-gradient(150deg, rgba(63, 174, 255, .3)15%, rgba(63, 174, 255, .3)70%, rgba(63, 174, 255, .3)94%), url(https://bootdey.com/img/Content/flores-amarillas-wallpaper.jpeg);height: 200px;width:100%;background-size: cover;">
+      </div>
+      <div class="card social-prof" id='img1' style = "height: 290px">
+        <div class="card-body">
+          <div class="wrapper">
+            <b-img v-bind:src="details.Picture" alt="" class="user-profile" width="100px" height="100px"
+              rounded="circle"></b-img>
+            <h4 id = "name_field">{{details.FirstName}} {{details.LastName}}</h4>
+            <h6 id = "username_field">@{{$route.params.userId}}</h6>
+            <h6 id = "yearmajor_field">Year {{details.Year}} {{details.Major}}</h6>
+            <b-button v-if="$route.params.userId===this.myaccid" id="popover-reactive-1" v-on:click="changePic()">Change My Picture</b-button>
+            <b-button class='ml-3' v-if="$route.params.userId===this.myaccid" variant="secondary" to="/Edit-Details">Edit Details</b-button>
+          </div>
 
+          <b-popover target="popover-reactive-1" triggers="click" :show.sync="popoverShow" placement="auto"
+            container="my-container" ref="popover" @show="onShow" @shown="onShown" @hidden="onHidden">
+            <template v-slot:title>
+              <b-button @click="onClose" class="close" aria-label="Close">
+                <span class="d-inline-block" aria-hidden=true>&times;</span>
+              </b-button>
+              Change my profile picture
+            </template>
+
+            <div>
+              <b-form-group label="URL" label-for="popover-input-1" label-cols="3" :state="input1state" class="mb-1"
+                description="Enter URL" invalid-feedback="This field is required">
+                <b-form-input ref="input1" id="popover-input-1" v-model="input1" :state="input1state" size="sm">
+                </b-form-input>
+              </b-form-group>
+
+              <b-button @click="onClose" size="sm" variant="danger">Cancel</b-button>
+              <b-button @click="onOk" size="sm" variant="primary">Ok</b-button>
+            </div>
+          </b-popover>
+        </div>
+      </div>
+      <div>
         
-    </b-row> 
-    
-    
-</b-container>
-</div>
+        <b-row>
+          <b-col>
+            <!-- This card contains 4 tabs - Profile (active), Group Created, Groups Joined, User Dashboard -->
+            <b-card no-body>
+              <!-- setting active makes it the default tab -->
+              <b-tabs pills card active>               
+                <b-tab title='Group Joined' >
+                  <h1>Project Groups</h1>
+                  <span class = 'divider'></span>
+                  <br>
+                  <b-row align-h="start">
+                      <ProjectGroup v-for = "(item) in this.details['GroupsJoined']" v-bind:key = "item.id"  
+                      v-bind:module = "item.ModuleCode"
+                      v-bind:userId = "item.Poster"
+                      v-bind:post_desc = "item.Description"
+                      v-bind:post_status = "item.Limit > item.UserNames.length ? item.Limit- item.UserNames.length + ' more needed' : 'Closed'"
+                      v-bind:post_date = "item.DatePosted.toDate()"
+                      v-bind:members = "item.UserNames"
+                      :doc_id = "item.id"
+                      :hide_post = "item.hidden"
+                      ></ProjectGroup>
+                      <div v-show = "this.details['GroupsJoined'].length == 0" class='ml-3'>
+                        No Project Groups joined yet.
+                      </div>
+                  </b-row>
+
+                  <br>
+                  <h1>Study Groups</h1>
+                  <span class = 'divider'></span>
+                  <br>
+                  <b-row align-h= "start">
+                    <StudyGroup v-for = "(item) in this.details['StudyJoined']" 
+                    :key = "item.id"
+                    :groupName = "item.GroupName"
+                    :userId = "item.Poster" 
+                    :post_desc = "item.Description"
+                    :mod_code = "item.ModuleCode"
+                    :post_status= "item.UserNames.length < item.Limit ? item.Limit- item.UserNames.length + ' Needed' : 'Closed'"
+                    :post_date = "item.DatePosted.toDate()"
+                    :location = "item.Location"
+                    :members = "item.UserNames"
+                    :doc_id = "item.id"
+                    :hide_post = "item.hidden">
+                    </StudyGroup>
+                    <div v-show = "this.details['StudyJoined'].length == 0" class='ml-3'>
+                        No Study Groups joined yet.
+                      </div>  
+                  </b-row>
+                </b-tab>
+
+                <b-tab title='Groups Created'>
+                  <h1>Project Groups</h1>
+                  <span class = 'divider'></span>
+                  <br>
+                  <b-row align-h="start">
+                      <ProjectGroup v-for = "(item) in this.details['GroupsCreated']" v-bind:key = "item.id"  
+                      v-bind:module = "item.ModuleCode"
+                      v-bind:userId = "item.Poster"
+                      v-bind:post_desc = "item.Description"
+                      v-bind:post_status = "item.Limit > item.UserNames.length ? item.Limit- item.UserNames.length + ' more needed' : 'Closed'"
+                      v-bind:post_date = "item.DatePosted.toDate()"
+                      v-bind:members = "item.UserNames"
+                      :doc_id = "item.id"
+                      :hide_post = "item.hidden"
+                      ></ProjectGroup>
+                    <div v-show = "this.details['GroupsCreated'].length == 0" class='ml-3'>
+                        No Project Groups created yet.
+                    </div> 
+                  </b-row>
+
+                  <br>
+                  <h1>Study Groups</h1>
+                  <span class = 'divider'></span>
+                  <br>
+                  <b-row align-h= "start">
+                    <StudyGroup v-for = "(item) in this.details['StudyCreated']" 
+                      :key = "item.id"
+                      :groupName = "item.GroupName"
+                      :userId = "item.Poster" 
+                      :post_desc = "item.Description"
+                      :mod_code = "item.ModuleCode"
+                      :post_status= "item.UserNames.length < item.Limit ? item.Limit- item.UserNames.length + ' Needed' : 'Closed'"
+                      :post_date = "item.DatePosted.toDate()"
+                      :location = "item.Location"
+                      :members = "item.UserNames"
+                      :doc_id = "item.id"
+                      :hide_post = "item.hidden">
+                      </StudyGroup>
+                      <div v-show = "this.details['StudyCreated'].length == 0" class='ml-3'>
+                        No Study Groups created yet.
+                      </div>          
+                  </b-row>
+                </b-tab>
+
+                <b-tab title='User Dashboard' id='dashboard'>
+                  <b-row>
+                    <b-col xl="4">
+                      <div v-if="!chart1show" style="text-align: center; width: 100%; height: 100%; position: absolute; left: 0; top: 100px; z-index: 20;">
+                        <b>No groups created or joined yet!</b>
+                      </div>
+                    <pie-chart :chartdata="chartData" :options="chartOptions"/>
+                    </b-col>
+                  
+                    <b-col xl="4">
+                      <div v-if="!chart2show" style="text-align: center; width: 100%; height: 100%; position: absolute; left: 10px; top: 100px; z-index: 20;">
+                        <b>No groups joined yet!</b>
+                      </div>
+                    <bar-chart :chartdata="chartData2" :options="chartOptions2"/>
+                    </b-col>
+
+                    <b-col xl="4">
+                      <div v-if="!chart3show" style="text-align: center; width: 100%; height: 100%; position: absolute; left: 10px; top: 100px; z-index: 20;">
+                        <b>No groups created yet!</b>
+                      </div>
+                    <bar-chart :chartdata="chartData3" :options="chartOptions3"/>
+                    </b-col>
+                  </b-row>
+                </b-tab>
+              </b-tabs>
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-import NavBar from './NavBar.vue'
-import Post from './Post.vue'
-import StudyPost from './StudyPost.vue'
-export default {
+  import NavBar from './NavBar.vue'
+  import firebase from 'firebase'
+  import database from '../firebase.js'
+  import ProjectGroup from './ProjectGroup.vue'
+  import StudyGroup from './StudyGroup.vue'
+  import Pie from '../Pie.js'
+  import Bar from '../Bar.js'
+  export default {
+    name: 'Profile',
     components: {
-        'nb' : NavBar,
-        Post,
-        StudyPost
+      'nb': NavBar,
+      ProjectGroup,
+      StudyGroup,
+      'pie-chart': Pie,
+      'bar-chart': Bar
     },
-    props: ["icon", "name", "userId", "img", "major", "username"],
     data() {
-        return {
-            spidey: {
-                icon: 'https://66.media.tumblr.com/19b4fd02190fe6d034f763442456191f/tumblr_owelzq4E7j1tf5kqco9_250.png',
-                name: 'Peter P.',
-                userId: 1,
-                major: 'Business Analytics',
-                username: "notspiderman",
-                year: 2
-
-            }, 
-            posts: [
-                {
-                    mod_code: "BT3103",
-                    userId: "notspiderman",
-                    post_desc: "Looking for one more member! Willing to accept anyone :)",
-                    post_status: "4 out of 5 members",
-                    post_date: new Date(2020, 1, 3),
-                    members: ["notspiderman", "ned","dodobird", "michaelangelo"]
-                }
-            ],
-            studyposts: [
-                {
-                    groupName: "CLB muggers",
-                    userId: "notspiderman",
-                    post_desc: "Monday - Friday, 10am - 8pm at CLB! Join if you're looking to mug all day!",
-                    post_status: "3 out of 6 members",
-                    post_date: new Date(2020, 1, 2),
-                    location: "NUS",
-                    faculty: "Any",
-                    members: ["notspiderman", "ned", "tomandjerry"]
-                }
-            ],
-            joined:[
-                {
-                    mod_code: "GET1000",
-                    userId: "jin",
-                    post_desc: "Group of y2s from computing, need one more member for the project.",
-                    post_status: "4 out of 5 members",
-                    post_date: new Date(2020, 1, 18),
-                    members: ["jin","dodobird","tonydanza", "notspiderman"]
-                
-                }
-            ]
+      return {
+        /* Data for Group types graph */
+        chart1show:true,
+        chartData: {
+          labels: [],
+          datasets: [
+            {
+              data: [],
+              backgroundColor:[],
+              borderWidth:0.5,
+              borderColor:'#000'
+            }
+          ]
+        },
+        chartOptions: {
+            title:{
+                display:true,
+                text:'Breakdown of all Group Joined and Created',
+                fontColor:'Black',
+                fontSize:15
+            },
+            scales:{
+                yAxes:[{
+                    ticks:{
+                        min:0
+                    }
+                }]
+            },
+            layout:{
+              padding:{
+                  left: 5,
+                  right: 0,
+                  top: 0,
+                  bottom: 10
+              }
+          }
+        },
+        /* Data for joined groups graph */
+        chart2show:true,
+        chartData2: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Project Groups Joined',
+              data: [],
+              backgroundColor:'cyan',
+              borderWidth:0.5,
+              borderColor:"#000"
+            },
+            {
+              label: 'Study Groups Joined',
+              data: [],
+              backgroundColor:'hotpink',
+              borderWidth:0.5,
+              borderColor:"#000"
+            }
+          ]
+        },
+        chartOptions2: {
+            title:{
+                display:true,
+                text:'Breakdown of Groups Joined over time',
+                fontColor:'Black',
+                fontSize:15
+            },
+            scales:{
+                yAxes:[{
+                    ticks:{
+                        min:0
+                    }
+                }]
+            },
+            layout:{
+              padding:{
+                  left: 5,
+                  right: 0,
+                  top: 0,
+                  bottom: 10
+              }
+          }  
+        },
+        /* Data for created groups graph */
+        chart3show:false,
+        chartData3: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Project Groups Created',
+              data: [],
+              backgroundColor:'springgreen',
+              borderWidth:0.5,
+              borderColor:"#000",
+              hoverBackgroundColor: "springgreen"
+            },
+            {
+              label: 'Study Groups Created',
+              data: [],
+              backgroundColor:'Orange',
+              borderWidth:0.5,
+              borderColor:"#000",
+              hoverBackgroundColor: "Orange"
+            }
+          ]
+          
+        },
+        chartOptions3: {
+            title:{
+                display:true,
+                text:'Breakdown of Groups Created over time',
+                fontColor:'Black',
+                fontSize:15
+            },
+            scales:{
+                yAxes:[{
+                    ticks:{
+                        min:0
+                    }
+                }]
+            },
+            layout:{
+              padding:{
+                  left: 5,
+                  right: 0,
+                  top: 0,
+                  bottom: 10
+              }
+          }
+        },
+        showModal: false,
+        user: null,
+        email: '',
+        id: '',
+        myaccid: '',
+        details: {
+          FirstName: '',
+          GroupsCreated: [],
+          GroupsJoined: [],
+          StudyCreated: [],
+          StudyJoined: [],
+          LastName: '',
+          Major: '',
+          NUSNET: '',
+          Password: '',
+          UserName: '',
+          Year: '',
+          Picture: ''
+        },
+        routeuserid: this.$route.params.userId,
+        input1: '',
+        input1state: null,
+        popoverShow: false
+      }
+    },
+    watch: {
+      input1(val) {
+        if (val) {
+          this.input1state = true
         }
+      }
+    },
+    methods: {
+      changePic: function() {
+        this.popoverShow =true
+      },
+      submitChanges: function () {
+        database.collection('Users')
+          .doc(this.id)
+          .update({
+            Picture: this.details.Picture
+          })
+          .then(() => {
+            console.log('account details updated!')
+            this.showModal = true;
+          })
+      },
+      onClose() {
+        this.popoverShow = false
+      },
+      onOk() {
+        if (!this.input1) {
+          this.input1state = false
+        }
+        if (this.input1) {
+          this.onClose()
+          // Return our popover form results
+          this.details.Picture = this.input1
+          this.submitChanges()
+        }
+      },
+      onShow() {
+        // This is called just before the popover is shown
+        // Reset our popover form variables
+        this.input1 = ''
+        this.input1state = null
+      },
+      onShown() {
+        // Called just after the popover has been shown
+        // Transfer focus to the first input
+        this.focusRef(this.$refs.input1)
+      },
+      onHidden() {
+        // Called just after the popover has finished hiding
+        // Bring focus back to the button
+        this.focusRef(this.$refs.button)
+      },
+      focusRef(ref) {
+        // Some references may be a component, functional component, or plain element
+        // This handles that check before focusing, assuming a `focus()` method exists
+        // We do this in a double `$nextTick()` to ensure components have
+        // updated & popover positioned first
+        this.$nextTick(() => {
+          this.$nextTick(() => {
+            (ref.$el || ref).focus()
+          })
+        })
+      },
+      getGroups: function () {
+        let grp = {};
+        database.collection("Project Group").where("UserNames", "array-contains", this.details.UserName).get().then(
+          (querySnapshot) => {
+              querySnapshot.forEach(doc => {
+                grp = doc.data()
+                grp.id = doc.id
+                if (grp.Poster === this.details.UserName) {
+                  this.details.GroupsCreated.push(grp);
+                } else {
+                  this.details.GroupsJoined.push(grp)
+                }          
+          })  
+        });
+        database.collection("Study Group").where("UserNames", "array-contains", this.details.UserName).get().then(
+          (querySnapshot) => {
+              querySnapshot.forEach(doc => {
+                grp = doc.data()
+                grp.id = doc.id
+                if (grp.Poster === this.details.UserName) {
+                  this.details.StudyCreated.push(grp);
+                } else {
+                  this.details.StudyJoined.push(grp)
+                }          
+          })  
+        })
+      },
+      sortDate: function(aa,bb) {
+        var a = aa[0] + ''
+        var b = bb[0] +''
+        var datePartsa = a.split("/");
+        var dateObjecta = new Date(datePartsa[2], datePartsa[1] - 1, +datePartsa[0]); 
+        var datePartsb = b.split("/");
+        var dateObjectb = new Date(datePartsb[2], datePartsb[1] - 1, +datePartsb[0]); 
+        return (dateObjecta - dateObjectb)
+      }
+    },
+    created: function () {
+      var vm = this;
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+          vm.user = user;
+          vm.email = user.email;
+          vm.email = vm.email.substring(0, vm.email.indexOf("@"))
+          const emailToCheck = vm.email;
+          database.collection('Users')
+            .where('NUSNET' , '==', emailToCheck.toUpperCase())
+            .get().then((querySnapShot) => {
+                querySnapShot.forEach((doc) => {
+                    vm.myaccid = doc.data().UserName;
+                })
+            })
+            .catch(function(error) {
+                console.log("Error getting documents: ", error);
+            });
+            var projGrpJoinedTime = [];
+            var projGrpCreatedTime = [];
+            var studyGrpJoinedTime = [];
+            var studyGrpCreatedTime = [];
+            const userToCheck = vm.routeuserid;
+            database.collection('Users')
+              .where('UserName', '==', userToCheck)
+              .get().then((querySnapShot) => {
+                querySnapShot.forEach((doc) => {
+                  vm.id = doc.id
+                  vm.details.FirstName = doc.data().FirstName;
+                  vm.details.LastName = doc.data().LastName;
+                  vm.details.Major = doc.data().Major;
+                  vm.details.UserName = doc.data().UserName;
+                  vm.details.Year = doc.data().Year;
+                  vm.details.Picture = doc.data().Picture;
+                  if (doc.data().ProjectGroupsCreated.length>0) {
+                    vm.chartData.datasets[0].data.push(doc.data().ProjectGroupsCreated.length);
+                    vm.chartData.labels.push("Project Groups Created")
+                    vm.chartData.datasets[0].backgroundColor.push('springgreen')
+                    vm.chart3show = true;
+                    /* for chartData3 (created) */
+                    for (const grpid of doc.data().ProjectGroupsCreated) {
+                      // look into Project Groups database using this grpid
+                      database.collection('Project Group')
+                      .doc(grpid).get()
+                      .then((grpdoc) => {                
+                        const t = grpdoc.data().DatePosted;
+                        var day = ("0" + t.toDate().getDate()).slice(-2)
+                        var month = ("0" + (t.toDate().getMonth() + 1)).slice(-2) 
+                        var year = t.toDate().getFullYear();
+                        var dmy = day + "/" + month + "/" + year;
+                        var exist = false;
+                        projGrpCreatedTime.find(activity => {
+                          if (activity[0] == dmy) {
+                            activity[1] += 1
+                            exist = true;
+                          }
+                        });
+                        if (!exist) {
+                          projGrpCreatedTime.push([dmy, 1])
+                          studyGrpCreatedTime.push([dmy, 0])
+                        }
+                        console.log(projGrpCreatedTime)
+                        projGrpCreatedTime.sort(vm.sortDate);
+                        studyGrpCreatedTime.sort(vm.sortDate);
+                        vm.chartData3.labels = projGrpCreatedTime.map(function(act) {return act[0]});
+                        vm.chartData3.datasets[0].data = projGrpCreatedTime.map(function(act) {return act[1]});
+                        vm.chartData3.datasets[1].data = studyGrpCreatedTime.map(function(act) {return act[1]});
+                        }
+                        );
+                      }
+                  }
+                  if (Object.keys(doc.data().ProjectGroupsJoined).length>0) {
+                    vm.chartData.datasets[0].data.push(doc.data().ProjectGroupsJoined.id.length);
+                    vm.chartData.labels.push("Project Groups Joined")
+                    vm.chartData.datasets[0].backgroundColor.push('cyan')
+                    /* for chartData2 (joined) */
+                    doc.data().ProjectGroupsJoined.timestamp.forEach((t) => {
+                      var day = ("0" + t.toDate().getDate()).slice(-2)
+                      var month = ("0" + (t.toDate().getMonth() + 1)).slice(-2) 
+                      var year = t.toDate().getFullYear();
+                      var dmy = day + "/" + month + "/" + year;
+                      var exist = false;
+                      projGrpJoinedTime.find(activity => {
+                        if (activity[0] == dmy) {
+                            activity[1] += 1
+                            exist = true;
+                          }
+                      })
+                      if (!exist) {
+                        projGrpJoinedTime.push([dmy, 1])
+                        studyGrpJoinedTime.push([dmy, 0])
+                      }
+                      }) 
+                      projGrpJoinedTime.sort(vm.sortDate);
+                      studyGrpJoinedTime.sort(vm.sortDate)
+                      vm.chartData2.labels = projGrpJoinedTime.map(function(act) {return act[0]});
+                      vm.chartData2.datasets[0].data = projGrpJoinedTime.map(function(act) {return act[1]});
+                      vm.chartData2.datasets[1].data = studyGrpJoinedTime.map(function(act) {return act[1]});
+                    }
+                  if (doc.data().StudyGroupsCreated.length>0) {
+                    vm.chartData.datasets[0].data.push(doc.data().StudyGroupsCreated.length);
+                    vm.chartData.labels.push("Study Groups Created")
+                    vm.chartData.datasets[0].backgroundColor.push('orange')
+                    vm.chart3show = true;
+                    /* for chartData3 (created) */
+                    doc.data().StudyGroupsCreated.forEach((grpid) => {
+                      // look into Project Groups database using this grpid
+                      database.collection('Study Group')
+                      .doc(grpid).get()
+                      .then((grpdoc) => {
+                        const t = grpdoc.data().DatePosted;
+                        var day = ("0" + t.toDate().getDate()).slice(-2)
+                        var month = ("0" + (t.toDate().getMonth() + 1)).slice(-2) 
+                        var year = t.toDate().getFullYear();
+                        var dmy = day + "/" + month + "/" + year;
+                        var exist = false;
+                        studyGrpCreatedTime.find(activity => {
+                          if (activity[0] == dmy) {
+                              activity[1] += 1
+                              exist = true;
+                            }})
+                        if (!exist) {
+                          studyGrpCreatedTime.push([dmy, 1])
+                          projGrpCreatedTime.push([dmy, 0])
+                        }
+                        studyGrpCreatedTime.sort(vm.sortDate);
+                        projGrpCreatedTime.sort(vm.sortDate);
+                        vm.chartData3.labels = studyGrpCreatedTime.map(function(act) {return act[0]});
+                        vm.chartData3.datasets[1].data = studyGrpCreatedTime.map(function(act) {return act[1]});
+                        vm.chartData3.datasets[0].data = projGrpCreatedTime.map(function(act) {return act[1]});
+                        })
+                        })
+                  }
+                  if (Object.keys(doc.data().StudyGroupsJoined).length>0) {
+                    vm.chartData.datasets[0].data.push(doc.data().StudyGroupsJoined.id.length);
+                    vm.chartData.labels.push("Study Groups Joined")
+                    vm.chartData.datasets[0].backgroundColor.push('hotpink')
+                    /* for chartData2 (joined) */
+                    doc.data().StudyGroupsJoined.timestamp.forEach((t) => {
+                      var day = ("0" + t.toDate().getDate()).slice(-2)
+                      var month = ("0" + (t.toDate().getMonth() + 1)).slice(-2) 
+                      var year = t.toDate().getFullYear();
+                      var dmy = day + "/" + month + "/" + year;
+                      var exist = false;
+                      studyGrpJoinedTime.find(activity => {
+                      if (activity[0] == dmy) {
+                            activity[1] += 1
+                            exist = true;
+                          }})
+                      
+                      if (!exist) {
+                        studyGrpJoinedTime.push([dmy, 1])
+                        projGrpJoinedTime.push([dmy, 0])
+                      }
+                      })
+                      studyGrpJoinedTime.sort(vm.sortDate);
+                      projGrpJoinedTime.sort(vm.sortDate);
+                      vm.chartData2.labels = studyGrpJoinedTime.map(function(act) {return act[0]});
+                      vm.chartData2.datasets[1].data = studyGrpJoinedTime.map(function(act) {return act[1]}); 
+                      vm.chartData2.datasets[0].data = projGrpJoinedTime.map(function(act) {return act[1]}); 
+                  }        
+                  if (vm.chartData.labels.length == 0) {vm.chart1show=false;}
+                  if (vm.chartData2.labels.length == 0) {vm.chart2show=false;}
+                  vm.getGroups();
+                })
+              })
+              .catch(function (error) {
+                console.log("Error getting documents: ", error);
+              });
+          } else {
+            vm.user = null;
+          }
+      });
     }
-}
+  }
 </script>
 
-<style>
-.profile-sidebar {
-    background-color: paleturquoise
-}
-
-.profile-activity {
-    background-color: palegoldenrod
-}
-
-#Name {
-    font-size: 32px;
-    text-align: center;
-    letter-spacing: 1px;
-    font-weight: bold;
-}
-
-#username {
-    color:gray;
-}
-#details {
-    margin-top: 5px;
-    
-}
-#about {
-    margin-left: -30px;
-}
-
-.icon {
-    margin-bottom: 20px;
-}
-
-
+<style scoped>
+  body {
+    background-color: #f0f6ff;
+    color: #28384d;
+  }
+  .divider {
+    display:block;
+    width: 100 px;
+    height: 2px;
+    background-color:#28384d;
+  }
+  #img1 {
+    height: 250px;
+  }
+  .hi {
+    padding-left: 10%;
+    padding-right: 10%
+  }
+  #info {
+    height: 1000px;
+    width: 1230px;
+  }
+  #dashboard {
+    height: 500px
+  }
+  /* Styling the name */
+  #name_field {
+    padding-top: 5px;
+    font-weight:bold;
+  }
+  /* Styling username */
+  #username_field {
+    font-style:italic;
+  }
+  /* Styling year and major  */
+  #yearmajor_field {
+    font-size:110%;
+  }
 </style>

@@ -1,11 +1,9 @@
 <template>
-
   <div>
     <nb></nb>
-
-    <h4> Having issues with LoNUS? Drop us an enquiry to let us help! </h4>
+    <h4> Having issues with LoNUS? Drop us an message to let us help you! </h4>
     <form @submit="onSubmit" @reset="onReset" v-if="show">
-    <b-form-group id="input-group-3" label="Enquiry Type:" label-for="input-3" label-cols-sm="2" label-cols-lg="3">
+    <b-form-group id="input-group-3" label="Enquiry Type:" label-for="input-3" label-cols-sm="2" label-cols-lg="3" label-align-lg="right" label-align-sm="right">
         <b-form-select
           id="input-3"
           v-model="form.enquiry"
@@ -15,8 +13,7 @@
         ></b-form-select>
       </b-form-group>
 
-
-    <b-form-group id="input-group-1" label="Subject Line:" label-for="input-1" label-cols-sm="2" label-cols-lg="3">
+    <b-form-group id="input-group-1" label="Subject Line:" label-for="input-1" label-cols-sm="2" label-cols-lg="3" label-align-lg="right" label-align-sm="right">
         <b-form-input
           id="input-1"
           v-model="form.subject"
@@ -27,18 +24,17 @@
         ></b-form-input>
       </b-form-group>
 
-      <b-form-group id="input-group-2" label="Description of Problem:" label-for="input-2" label-cols-sm="2" label-cols-lg="3" >
+      <b-form-group id="input-group-2" label="Description of Problem:" label-for="input-2" label-cols-sm="2" label-cols-lg="3" label-align-lg="right" label-align-sm="right">
         <b-form-input
           id="input-2"
           v-model="form.description"
           required
           style="height:100px"
-          placeholder="Enter Description of Enquiry"
+          placeholder="Enter Description of Problem"
         ></b-form-input>
       </b-form-group>
 
-      <b-form-group id="input-group-1" label="Preferred Email Address" label-for="input-5" label-cols-sm="2"
-          label-cols-lg="3">
+      <b-form-group id="input-group-1" label="Preferred Email Address" label-for="input-5" label-cols-sm="2" label-cols-lg="3" label-align-lg="right" label-align-sm="right">
         <b-form-input
           id="input-5"
           v-model="form.email"
@@ -48,17 +44,15 @@
         ></b-form-input>
       </b-form-group>
       
-
       <b-form-group id="input-group-4">
         <b-form-checkbox-group v-model="form.checked" id="checkboxes-4">
           <b-form-checkbox value="me">Send me an Email Confirmation</b-form-checkbox>
         </b-form-checkbox-group>
       </b-form-group>
 
-      <b-button type="submit" variant="primary"> Submit</b-button>
+      <b-button type="submit" variant="primary">Submit</b-button> &nbsp;
       <b-button type="reset" variant="danger">Reset</b-button>
     </form>
-    
   </div>
 </template>
 
@@ -124,7 +118,6 @@ export default {
   max-width: 1200px;
   padding: 20px;
   margin: auto;
-
 }
 
 #input-group-1{
@@ -132,7 +125,6 @@ export default {
   max-width: 1200px;
   padding: 20px;
   margin: auto;
-
 }
 
 #input-group-2{
@@ -140,24 +132,18 @@ export default {
   max-width: 1200px;
   padding: 20px;
   margin: auto;
-  
-
-  
 }
 
 #input-group-4{
   padding: 20px;
   margin: auto;
- 
 }
 
 h4{
-  background-color: black;
+  background-color: #007bff;
   color: white;
+  font-weight: 600;
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
-
-
-
 </style>

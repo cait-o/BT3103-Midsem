@@ -1,6 +1,6 @@
 <template>
 <div> <nb></nb>
-<h4> LoNUS Postings </h4>
+<h4> LoNUS Groups </h4>
 <!-- Selection screen between Project and Study Groups; Default is Project Groups -->
 <b-container fluid = "lg">
     <div class= "radio">
@@ -22,7 +22,7 @@
                     <b-input
                         id="b-form-input-module"
                         class = "mb-2 mr-sm-2 mb-sm-0 search"
-                        placeholder="Enter module code"
+                        placeholder="Enter Module Code"
                         v-model="mod"
                         v-on:keyup.enter = "searchModule()"
                     ></b-input>    
@@ -31,22 +31,23 @@
                     <b-input
                         id="b-form-input-module"
                         class = "mb-2 mr-sm-2 mb-sm-0 search"
-                        placeholder="Enter friend's username"
+                        placeholder="Enter Username"
                         v-model="projfriends"
                         v-on:keyup.enter = "friendsPrivacy = !friendsPrivacy"
                     ></b-input>    
-                    <b-modal v-model = "friendsPrivacy" hide-footer="true">
+                    <b-modal v-model = "friendsPrivacy" hide-footer=true>
                         <b>NOTE!</b>
                         Abuse and misuse of this function will result in the suspension from this platform.
-                        <b-button class="mt-3" variant="outline-danger" block>Cancel</b-button>
-                        <b-button class="mt-3" variant="outline-success" block @click="findFriends()">I understand</b-button>
+                        <b-button class="mt-3" variant="outline-danger" block @click = "friendsPrivacy = !friendsPrivacy; consent=false">Cancel</b-button>
+                        <b-button class="mt-3" variant="outline-success" block @click="consent=true;findFriends()">I understand</b-button>
                     </b-modal>
 
                     <!-- Sorting options -->
                     <b-form-select 
                     v-model="selected_sort" 
                     :options="sort" 
-                    class = "mb-2 mr-sm-2 mb-sm-0">
+                    class = "mb-2 mr-sm-2 mb-sm-0"
+                    id="b-form-input-module">
                     </b-form-select>
                 </b-form>  
         </div>
@@ -60,32 +61,30 @@
             <b-input
                 id="b-form-input-module"
                 class = "mb-2 mr-sm-2 mb-sm-0 search"
-                placeholder="Enter friend's username"
+                placeholder="Enter Username"
                 v-model="studyfriends"
                 v-on:keyup.enter = "friendsPrivacy = !friendsPrivacy"
             ></b-input>    
-            <b-modal v-model = "friendsPrivacy" hide-footer="true">
+            <b-modal v-model = "friendsPrivacy" hide-footer=true>
                 <b>NOTE!</b>
                 Abuse and misuse of this function will result in the suspension from this platform.
-                <b-button class="mt-3" variant="outline-danger" block>Cancel</b-button>
-                <b-button class="mt-3" variant="outline-success" block @click="findFriends()">I understand</b-button>
+                <b-button class="mt-3" variant="outline-danger" block @click = "friendsPrivacy = !friendsPrivacy; consent=false">Cancel</b-button>
+                <b-button class="mt-3" variant="outline-success" block @click="consent=true;findFriends()">I understand</b-button>
             </b-modal>
-
-            <b-form-select v-model="selected_faculty" :options="faculty" label-field= "location" class = "mb-2 mr-sm-2 mb-sm-0"></b-form-select>
-            <b-form-select v-model="selected_sort" :options="sort" class = "mb-2 mr-sm-2 mb-sm-0"></b-form-select>
+            
+            <b-form-select id="b-form-input-module" v-model="selected_faculty" :options="faculty" label-field= "faculty" class = "mb-2 mr-sm-2 mb-sm-0"></b-form-select>
+            <b-form-select id="b-form-input-module" v-model="selected_location" :options="location" label-field= "location" class = "mb-2 mr-sm-2 mb-sm-0"></b-form-select>
+            <b-form-select id="b-form-input-module" v-model="selected_sort" :options="sort" class = "mb-2 mr-sm-2 mb-sm-0"></b-form-select>
             
             </b-form>
         </div>
     </div>
-
     <br>
     <b-spinner variant = "primary" v-show = "finish_loading"></b-spinner>
-</b-container>
+    </b-container>
     
-    <!-- change userId later.... -->
-
     <br>
-    <!-- This is where the project group posts will show up -->
+    <!-- This is where the project groups will show up -->
     <div v-show="selected_type === 'Project'">
         <div v-show = "searchResultsProject">
             <b-button v-on:click = "fetchProject()">Clear Search Results</b-button>
@@ -94,23 +93,21 @@
             <h3 v-show = "noResultsMod">No results for {{error_mod}}</h3>
         </div>
         <br>
-
         <b-row align-h="center">
-                <Post v-for = "(item) in projectList" v-bind:key = "item.id"  
+                <ProjectGroup v-for = "(item) in projectList" v-bind:key = "item.id"  
                 v-bind:module = "item.ModuleCode"
-                v-bind:userId = "A000001"
+                v-bind:userId = "item.Poster"
                 v-bind:post_desc = "item.Description"
-                v-bind:post_status = "item.Limit > item.UserNames.length ? item.Limit- item.UserNames.length + ' Needed' : 'Closed'"
+                v-bind:post_status = "item.Limit > item.UserNames.length ? item.Limit- item.UserNames.length + ' more needed' : 'Closed'"
                 v-bind:post_date = "item.DatePosted.toDate()"
                 v-bind:members = "item.UserNames"
                 :doc_id = "item.id"
                 :hide_post = "item.hidden"
-                ></Post>
-
+                ></ProjectGroup>
         </b-row>
      </div>
 
-    <!-- This is where the study group posts will show up -->
+    <!-- This is where the study groups will show up -->
     <br>
     <div v-show="selected_type === 'Study'">
         <div v-show = "searchResultsStudy">       
@@ -119,45 +116,44 @@
             <h3 v-show = "noResultsFriendStudy">No results for {{error_study_friend}}</h3>
         </div>
         <b-row align-h="center" >
-            <StudyPost v-for = "(item) in studyList" 
+            <StudyGroup v-for = "(item) in studyList" 
             :key = "item.id"
             :groupName = "item.GroupName"
-            :userId = "A000001" 
+            :userId = "item.Poster" 
             :post_desc = "item.Description"
             :mod_code = "item.ModuleCode"
-            :post_status= "item.UserNames.length < item.Limit ? 'Open' : 'Closed'"
+            :post_status= "item.UserNames.length < item.Limit ? item.Limit- item.UserNames.length + ' Needed' : 'Closed'"
             :post_date = "item.DatePosted.toDate()"
             :location = "item.Location"
             :members = "item.UserNames"
             :doc_id = "item.id"
             :hide_post = "item.hidden">
-            </StudyPost>    
-
+            </StudyGroup>    
       </b-row>
     </div>
   </b-container>    
   </div>
 </template>
 
-
 <script>
-import Post from './Post.vue'
-import StudyPost from './StudyPost.vue'
+import ProjectGroup from './ProjectGroup.vue'
+import StudyGroup from './StudyGroup.vue'
 import NavBar from './NavBar.vue'
 import database from '../firebase.js'
 
 export default {
     components: {
-        Post,
-        StudyPost,
+        ProjectGroup,
+        StudyGroup,
         'nb':NavBar
     }, methods: {
         fetchStudy: function() {
+            this.finish_loading = true;
             this.studyList.length = 0;
+            this.studyidList.length = 0;
             if (this.searchResultsStudy) {
                 this.searchResultsStudy = false;
             }
-
             let studyGrp = {}
             database.collection('Study Group').get().then((querySnapshot) => {
                 querySnapshot.forEach(doc => {
@@ -170,10 +166,14 @@ export default {
             })
         },
         fetchProject: function() {
+            this.finish_loading = true;
             this.projectList.length = 0;
-
+            this.projectidList.length = 0;
             if (this.searchResultsProject) {
                 this.searchResultsProject = false;
+            }
+            if (this.noResultsMod) {
+                this.noResultsMod = false
             }
             let projectGrp = {}
             database.collection('Project Group').get().then((querySnapshot) => {
@@ -187,11 +187,11 @@ export default {
             })
         },
         searchModule: function() {
-            this.projectList.length = 0; // clear the exisitng project list
+            this.projfriends = '';
+            this.projectList.length = 0; // clear the existing project list
             let projectGrp = {};
             this.finish_loading = true;
-           
-            database.collection("Project Group").where("ModuleCode", "==", this.mod).get().then(
+            database.collection("Project Group").where("ModuleCode", "==", this.mod.toUpperCase()).get().then(
                 (querySnapshot) => {
                     querySnapshot.forEach(doc => {
                         projectGrp = doc.data()
@@ -209,39 +209,51 @@ export default {
             })
            },
         findFriends: function() {
+            this.mod = ''
+            this.error_proj_friend = ''
+            this.error_study_friend = ''
+            this.noResultsFriendProj = false
+            this.noResultsFriendStudy= false
             this.friendsPrivacy = !this.friendsPrivacy;
-            if (this.selected_type == "Project") {
-                this.projectList.length = 0; // clear the exisitng project list
-            } else if (this.selected_type == "Study") {
-                this.studyList.length = 0;
+            this.projectList.length = 0; // clear the existing project list
+            this.projectidList.length = 0;
+            this.studyList.length = 0;
+            this.studyidList.length = 0;
+
+            if (this.consent == false) {
+                return;
             }
-            let templist = [];
-            let grp = {};
+            
             let friends = (this.selected_type == "Project") ? this.projfriends : this.studyfriends
             this.finish_loading = true;
-            let select_group = this.selected_type + " Group"
-            database.collection(select_group).where("UserNames", "array-contains", friends).get().then(
+            database.collection('Users').where("UserName", "==", friends.toLowerCase()).get().then(
                 (querySnapshot) => {
-                    querySnapshot.forEach(doc => {
-                        grp = doc.data()
-                        grp.id = doc.id
-                        templist.push(grp)
+                    querySnapshot.forEach((userdoc) => { //userdoc is the FRIEND
+                        this.projectidList = userdoc.data().ProjectGroupsCreated.concat(userdoc.data().ProjectGroupsJoined.id)
+                        this.projectidList.forEach((grpid) => {
+                            database.collection('Project Group').doc(grpid).get().then((grpdoc) => {
+                                this.projectList.push(grpdoc.data())
+                            })
+                        })
+                        
+                        this.studyidList = userdoc.data().StudyGroupsCreated.concat(userdoc.data().StudyGroupsJoined.id)
+                        this.studyidList.forEach((grpid) => {
+                            database.collection('Study Group').doc(grpid).get().then((grpdoc) => {
+                                this.studyList.push(grpdoc.data())
+                            })
+                        })
                 })
             }).finally(() => {
-                
                 if (this.selected_type == "Project") {
-                    this.projectList = [...templist];
                     this.searchResultsProject = true;
-
                     // if there is no matching results
-                    if (this.projectList.length == 0) {
+                    if (this.projectidList.length == 0) {
                         this.error_proj_friend = this.projfriends;
                         this.noResultsFriendProj = true;
                     }
                 } else if (this.selected_type == "Study") {
-                    this.studyList = [...templist];
                     this.searchResultsStudy = true;
-                     if (this.studyList.length == 0) {
+                     if (this.studyidList.length == 0) {
                         this.error_study_friend = this.studyfriends;
                         this.noResultsFriendStudy = true;
                     }
@@ -250,10 +262,12 @@ export default {
             })
         }   
     }
-    , data() {
+    ,data() {
         return {
             studyList: [],
             projectList: [],
+            studyidList: [],
+            projectidList: [],
             selected_type: "Project",
             group_types: [ 
                 {text: 'Project', value: 'Project'},
@@ -268,16 +282,24 @@ export default {
             error_mod: "",
             error_proj_friend: "",
             error_study_friend: "",
-            selected_faculty: "All",
+            selected_faculty: 'Any Faculty',
             faculty:[
-                {value:'All', text: 'Select Faculty'},
-                {value:'Computing', text: 'Computing'},
-                {value:'FASS', text: 'FASS'},
-                {value:'Medicine', text: 'Medicine'},
-                {value:'Science', text: 'Science'},
-                {value:'Law', text: 'Law'},
-                {value:'Business', text: 'Business'}, 
-                {value:'Engineering', text: 'Engineering'}       
+                {value:'Any Faculty', text: 'Any Faculty'},
+                {value:'School of Computing', text: 'School of Computing'},
+                {value:'Faculty of Arts and Social Sciences', text: 'Faculty of Arts and Social Sciences'},
+                {value:'Faculty of Science', text: 'Faculty of Science'},
+                {value:'School of Design and Environment', text: 'School of Design and Environment'},
+                {value:"School of Business", text: "School of Business"}, 
+                {value:"Faculty of Engineering", text: "Faculty of Engineering"}       
+            ],
+            selected_location: 'Any Location',
+            location:[
+                {value:'Any Location', text: 'Any Location'},
+                {value:'NUS', text:'NUS'},
+                {value:'North', text:'North'},
+                {value:'South', text:'South'},
+                {value:'East', text:'East'},
+                {value:'West', text:'West'}
             ],
             projfriends: "",
             studyfriends: "",
@@ -288,6 +310,7 @@ export default {
             searchResultsStudy: false,
             finish_loading: true,
             friendsPrivacy: false,
+            consent: false
         }
     },
     created() {
@@ -295,31 +318,72 @@ export default {
         this.fetchProject();
     },
     watch: {
+        selected_type: function() {
+            if (this.selected_type == "Project") {
+                this.fetchProject();
+                this.searchResultsProject = false;
+                this.noResultsFriendProj = false;
+                this.noResultsMod = false;
+            } else if (this.selected_type == "Study") {
+                this.fetchStudy();
+                this.searchResultsStudy = false;
+                this.noResultsFriendStudy = false;
+                this.noResultsMod = false;
+            }
+        },
         selected_sort: function(change_sort) {
-            this.projectList.length = 0; // clear the exisitng project list
-            let projectGrp = {}
-            if (change_sort === "Old") {
-                this.finish_loading = true;
-                database.collection('Project Group').orderBy('DatePosted').get().then((querySnapshot) => {
-                    querySnapshot.forEach(doc => {
-                        projectGrp = doc.data()
-                        projectGrp.id = doc.id
-                        this.projectList.push(projectGrp)
+            if (this.selected_type == "Project") {
+                this.projectList.length = 0; // clear the exisitng project list
+                let projectGrp = {}
+                if (change_sort === "Old") {
+                    this.finish_loading = true;
+                    database.collection('Project Group').orderBy('DatePosted').get().then((querySnapshot) => {
+                        querySnapshot.forEach(doc => {
+                            projectGrp = doc.data()
+                            projectGrp.id = doc.id
+                            this.projectList.push(projectGrp)
+                        })
+                    }).finally(() => {
+                        this.finish_loading = false;
                     })
-                }).finally(() => {
-                    this.finish_loading = false;
-                })
-            } else if (change_sort === "New") {
-                this.finish_loading = true;
-                database.collection('Project Group').orderBy('DatePosted', "desc").get().then((querySnapshot) => {
-                    querySnapshot.forEach(doc => {
-                        projectGrp = doc.data()
-                        projectGrp.id = doc.id
-                        this.projectList.push(projectGrp)
+                } else if (change_sort === "New") {
+                    this.finish_loading = true;
+                    database.collection('Project Group').orderBy('DatePosted', "desc").get().then((querySnapshot) => {
+                        querySnapshot.forEach(doc => {
+                            projectGrp = doc.data()
+                            projectGrp.id = doc.id
+                            this.projectList.push(projectGrp)
+                        })
+                    }).finally(() => {
+                        this.finish_loading = false;
                     })
-                }).finally(() => {
-                    this.finish_loading = false;
-                })
+                }
+            } else if (this.selected_type == "Study") {
+                this.studyList.length = 0;
+                let studyGrp = {};
+                if (change_sort === "Old") {
+                    this.finish_loading = true;
+                    database.collection('Study Group').orderBy('DatePosted').get().then((querySnapshot) => {
+                        querySnapshot.forEach(doc => {
+                            studyGrp = doc.data();
+                            studyGrp.id = doc.id;
+                            this.studyList.push(studyGrp);
+                        })
+                    }).finally(() => {
+                        this.finish_loading = false;
+                    })
+                } else if (change_sort === "New") {
+                    this.finish_loading = true;
+                    database.collection('Study Group').orderBy('DatePosted', "desc").get().then((querySnapshot) => {
+                        querySnapshot.forEach(doc => {
+                            studyGrp = doc.data();
+                            studyGrp.id = doc.id;
+                            this.studyList.push(studyGrp);
+                        })
+                    }).finally(() => {
+                        this.finish_loading = false;
+                    })
+                }
             }
         },
         selected_faculty: function(change_faculty) {
@@ -327,7 +391,7 @@ export default {
             let studyGrp = {};
             this.finish_loading = true;
 
-            if (change_faculty == "All") {
+            if (change_faculty == 'Any Faculty') {
                 this.fetchStudy();
             } else {
             // otherwise filter based on options
@@ -341,10 +405,29 @@ export default {
                     this.finish_loading = false;
                 })
             }
+        },
+        selected_location: function(change_location) {
+            this.studyList.length = 0;
+            let studyGrp = {};
+            this.finish_loading = true;
+
+            if (change_location == 'Any Location') {
+                this.fetchStudy();
+            } else {
+            // otherwise filter based on options
+                database.collection("Study Group").where("Location", "==", change_location).get().then((querySnapshot) => {
+                    querySnapshot.forEach(doc => {
+                        studyGrp = doc.data()
+                        studyGrp.id = doc.id
+                        this.studyList.push(studyGrp)
+                    })
+                }).finally(() => {
+                    this.finish_loading = false;
+                })
+            }
         }
     }
 }
-
 </script>
 
 <style scoped>
@@ -360,11 +443,10 @@ export default {
 }
 
 #filterbox {
-    
     padding-top: 20px;
     padding-bottom: 2px;
-
 }
+
 .filters {
     text-align: left;
     display: inline-block;
@@ -373,15 +455,19 @@ export default {
 
 .radio {
     padding-top: 10px; 
-
 }
 
 h4{
-  background-color: black;
+  background-color: #007bff;
   color: white;
+  font-weight: 600;
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
 
-
+#b-form-input-module{
+    padding-top: 2px;
+    padding-bottom: 2px;
+    width: 200px
+}
 </style>
